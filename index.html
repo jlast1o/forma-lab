@@ -73,6 +73,13 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 @media(prefers-reduced-motion:reduce){.mb-cover::after{animation:none}.mb-reveal{animation:none}}
 
 
+
+/* Postcard-only radio easter egg: do not alter earlier musicbox entries. */
+.mb-radio-signature{display:flex;flex-direction:column;align-items:center;gap:5px;margin:16px 0 2px;padding-top:13px;position:relative;text-align:center}
+.mb-radio-signature::before{content:'';height:1px;width:min(150px,50%);background:linear-gradient(90deg,transparent,#edc8da,transparent);position:absolute;top:0;left:50%;transform:translateX(-50%)}
+.mb-radio-code{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:19px;letter-spacing:.06em;color:#bb7396;line-height:1.1}
+.mb-radio-hint{font-family:inherit;font-weight:400;font-style:italic;font-size:10px;letter-spacing:.005em;color:#b992a7;line-height:1.4}
+
 /* music box v1.1 · restrained archive, no song spoilers before opening */
 .mb-links{display:flex;align-items:center;gap:10px 18px;flex-wrap:wrap}
 .mb-back{display:inline-flex;align-items:center;gap:6px;color:#975270;border:1px solid #edccdc;background:#fff9fc;font:750 11px/1.3 inherit;padding:9px 13px;border-radius:999px;margin:0 0 12px;position:relative;z-index:2;cursor:pointer;transition:background .2s}
@@ -423,14 +430,15 @@ const MUSICBOX_TIMEZONE='Europe/Minsk';
 const MUSICBOX_KEY='formlab.nastya.musicbox.v1';
 const MUSICBOX_SONGS=[
  {id:'gde-to-za-granitsey-vtoroy-ka',date:'2026-11-10',title:'Где-то за границей',artist:'Второй Ка',note:'Почему-то кажется, что эта песня идеально подошла бы для дороги куда-нибудь в горы.',embed:'https://music.yandex.ru/iframe/album/27285918/track/117168959',url:'https://music.yandex.ru/album/27285918/track/117168959',provider:'yandex'},
- {id:'noch-na-ulicah-stolicy-liandres',date:'2026-11-11',title:'ночь на улицах столицы',artist:'LIANDRES',note:'Не все звёзды видны на ночном небе. Некоторые появляются совершенно случайно — и остаются в мыслях до рассвета.',embed:'https://music.yandex.ru/iframe/album/16803322/track/87104149',url:'https://music.yandex.ru/album/16803322/track/87104149',provider:'yandex'}
+ {id:'noch-na-ulicah-stolicy-liandres',date:'2026-11-11',title:'ночь на улицах столицы',artist:'LIANDRES',note:'Не все звёзды видны на ночном небе. Некоторые появляются совершенно случайно — и остаются в мыслях до рассвета.',embed:'https://music.yandex.ru/iframe/album/16803322/track/87104149',url:'https://music.yandex.ru/album/16803322/track/87104149',provider:'yandex'},
+ {id:'detektivy-svidanie',date:'2026-11-12',title:'Детективы',artist:'Свидание',note:'Порой сюжет оказывается лишь предлогом. Настоящая история незаметно разворачивается по другую сторону экрана.',embed:'https://music.yandex.ru/iframe/album/4483325/track/51906326',url:'https://music.yandex.ru/album/4483325/track/51906326',provider:'yandex',radioSignature:true}
 ];
 function musicboxDate(){const parts=new Intl.DateTimeFormat('en-US',{timeZone:MUSICBOX_TIMEZONE,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());let p={};for(const part of parts)p[part.type]=part.value;return `${p.year}-${p.month}-${p.day}`}
 let mbOpened={};try{const raw=JSON.parse(localStorage.getItem(MUSICBOX_KEY)||'{}');if(raw&&typeof raw==='object'&&!Array.isArray(raw))mbOpened=raw}catch(e){}
 let mbSelected=null;
 const mbIcon=(name)=>name==='note'?'<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4.8-1.2L20 7.6 16.4 4 5.2 15.2 4 20Z"/><path d="m14 6 4 4"/></svg>':'<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M12 3v3M20 12h-3"/></svg>';
 function musicboxPart(song,kind){const id=song.id+':'+kind,open=mbOpened[id]===true,isNote=kind==='note',label=isNote?'Пара слов':'Музыкальный секрет';let revealed='';
- if(isNote)revealed=`<div class="mb-reveal"><div class="mb-note">«${esc(song.note)}»</div></div>`;
+ if(isNote)revealed=`<div class="mb-reveal"><div class="mb-note">«${esc(song.note)}»</div>${song.radioSignature?`<div class="mb-radio-signature" aria-label="Радиолюбительская подпись"><span class="mb-radio-code">73 ♡</span><span class="mb-radio-hint">p.s. маленькое послание на языке радистов</span></div>`:''}</div>`;
  else revealed=`<div class="mb-reveal"><div class="mb-track-head"><div class="mb-track-icon" aria-hidden="true">♫</div><div><div class="mb-track-name">${esc(song.title)}</div><div class="mb-track-artist">${esc(song.artist)}</div></div></div><iframe class="mb-embedded" title="${song.provider==='yandex'?'Яндекс Музыка':'Официальное аудио на YouTube'} — ${esc(song.title)} — ${esc(song.artist)}" src="${esc(song.embed)}" frameborder="0" allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe><div class="mb-links"><a class="mb-external" href="${esc(song.url)}" target="_blank" rel="noopener noreferrer">${song.provider==='yandex'?'Открыть в Яндекс Музыке ↗':'Слушать на YouTube ↗'}</a>${song.yandexSearch?`<a class="mb-external" href="${esc(song.yandexSearch)}" target="_blank" rel="noopener noreferrer">Найти в Яндекс Музыке ↗</a>`:''}</div></div>`;
  return `<div class="mb-part"><div class="mb-part-top"><span class="mb-part-name">${mbIcon(kind)} ${label}</span><span class="mb-part-hint">${open?'♡ Открыто':'Только для тебя'}</span></div>${open?`<div class="mb-secret mb-is-open">${revealed}</div>`:`<button type="button" class="mb-secret" data-act="musicbox-open" data-id="${esc(song.id)}" data-kind="${kind}" aria-expanded="false" aria-label="Раскрыть: ${label}"><span class="mb-cover"><span class="mb-cover-symbol" aria-hidden="true">${isNote?'♡':'♫'}</span><span class="mb-cover-word">${isNote?'Здесь спрятана маленькая мысль...':'Интересно, что за песня?'}</span><span class="mb-cover-arrow" aria-hidden="true">↗</span></span></button>`}</div>`;
 }
